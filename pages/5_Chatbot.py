@@ -7,16 +7,24 @@ st.set_page_config(page_title="AI Chatbot", page_icon="🤖", layout="wide")
 st.markdown("## 🤖 AI Data Analyst Chatbot")
 st.markdown("Hỏi bất kỳ câu hỏi nào về dữ liệu chuỗi cung ứng — Gemini sẽ viết SQL và phân tích cho bạn.")
 
-# ── API Key Input ──────────────────────────────────────────────────────────────
+# ── API Key Input (Tích hợp Auto-Secrets) ──────────────────────────────────────
 with st.sidebar:
     st.header("🔑 Cấu hình Gemini")
-    api_key = st.text_input("Gemini API Key", type="password",
-                             placeholder="AIza...",
-                             help="Lấy API key tại: https://aistudio.google.com")
-    if api_key:
-        st.success("✅ API key đã được nạp")
-    else:
-        st.warning("⚠️ Cần nhập API key để sử dụng chatbot")
+    
+    # Kỹ thuật Fallback: Ưu tiên đọc từ Cloud Secrets, nếu không có mới mở ô nhập tay
+    try:
+        # Lấy API Key từ tệp .streamlit/secrets.toml hoặc Cloud Variables
+        api_key = st.secrets["gemini"]["api_key"]
+        st.success("✅ API Key đã được nạp tự động từ Cloud.")
+    except (KeyError, FileNotFoundError):
+        # Mở ô nhập thủ công nếu chạy Localhost mà quên tạo file secrets
+        api_key = st.text_input("Gemini API Key", type="password",
+                                 placeholder="AIza...",
+                                 help="Lấy API key tại: https://aistudio.google.com")
+        if api_key:
+            st.success("✅ API key đã nhập thủ công")
+        else:
+            st.warning("⚠️ Cần cấu hình API key để sử dụng chatbot")
 
     st.markdown("---")
     st.markdown("### 💡 Gợi ý câu hỏi")
